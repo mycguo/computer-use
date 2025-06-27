@@ -63,9 +63,35 @@ export AWS_DEFAULT_REGION="us-east-1"
 
 ### Google Vertex AI Setup (if using)
 ```bash
-# Set up application default credentials
+# 1. Enable required APIs
+gcloud services enable aiplatform.googleapis.com
+gcloud services enable cloudresourcemanager.googleapis.com
+
+# 2. Grant required IAM permissions (choose one option):
+
+# Option A: For your user account (local development)
+gcloud projects add-iam-policy-binding YOUR_PROJECT_ID \
+    --member="user:YOUR_EMAIL@gmail.com" \
+    --role="roles/aiplatform.user"
+
+# Option B: For service account (cloud deployment)
+gcloud projects add-iam-policy-binding YOUR_PROJECT_ID \
+    --member="serviceAccount:YOUR_SERVICE_ACCOUNT@YOUR_PROJECT_ID.iam.gserviceaccount.com" \
+    --role="roles/aiplatform.user"
+
+# 3. Set up authentication
+# For local development:
 gcloud auth application-default login
-export CLOUD_ML_REGION="us-central1"
+export CLOUD_ML_REGION="us-central1"         # Optional - defaults to us-central1 in code
+export ANTHROPIC_VERTEX_PROJECT_ID="your-project-id"  # Optional - auto-detected from credentials
+
+# For cloud deployment:
+# The application automatically:
+# - Sets CLOUD_ML_REGION to "us-central1" if not specified
+# - Detects project ID from Google Cloud credentials if not specified
+# Use Google Cloud service account authentication or workload identity
+
+# Note: Vertex AI with Anthropic models requires billing to be enabled on your project
 ```
 
 ## Architecture Overview

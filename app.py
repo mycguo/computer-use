@@ -387,14 +387,29 @@ def validate_auth(provider: APIProvider, api_key: str | None):
         import google.auth
         from google.auth.exceptions import DefaultCredentialsError
 
+        # Set default region if not already set
         if not os.environ.get("CLOUD_ML_REGION"):
-            return "Set the CLOUD_ML_REGION environment variable to use the Vertex API."
-        try:
-            google.auth.default(
-                scopes=["https://www.googleapis.com/auth/cloud-platform"],
-            )
-        except DefaultCredentialsError:
-            return "Your google cloud credentials are not set up correctly."
+            os.environ["CLOUD_ML_REGION"] = "us-central1"
+        
+        # Set project ID if not already set
+        if not os.environ.get("ANTHROPIC_VERTEX_PROJECT_ID"):
+            try:
+                credentials, project_id = google.auth.default(
+                    scopes=["https://www.googleapis.com/auth/cloud-platform"],
+                )
+                if project_id:
+                    os.environ["ANTHROPIC_VERTEX_PROJECT_ID"] = project_id
+                else:
+                    return "Could not determine Google Cloud project ID. Set ANTHROPIC_VERTEX_PROJECT_ID environment variable or ensure you're running in a Google Cloud environment with a default project."
+            except DefaultCredentialsError:
+                return "Your google cloud credentials are not set up correctly."
+        else:
+            try:
+                google.auth.default(
+                    scopes=["https://www.googleapis.com/auth/cloud-platform"],
+                )
+            except DefaultCredentialsError:
+                return "Your google cloud credentials are not set up correctly."
 
 
 def load_from_storage(filename: str) -> str | None:
