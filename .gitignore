@@ -9,3 +9,5 @@
 *.pywz
 *.pyzw
 *.pyzwz
+__pycache__/
+*.pyc

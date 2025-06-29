@@ -1,6 +1,7 @@
 import asyncio
 import base64
 import os
+import platform
 import shlex
 import shutil
 from enum import StrEnum
@@ -225,12 +226,16 @@ class BaseComputerTool:
         output_dir.mkdir(parents=True, exist_ok=True)
         path = output_dir / f"screenshot_{uuid4().hex}.png"
 
-        # Try gnome-screenshot first
-        if shutil.which("gnome-screenshot"):
-            screenshot_cmd = f"{self._display_prefix}gnome-screenshot -f {path} -p"
-        else:
-            # Fall back to scrot if gnome-screenshot isn't available
-            screenshot_cmd = f"{self._display_prefix}scrot -p {path}"
+        # Platform-specific screenshot commands
+        if platform.system() == "Darwin":  # macOS
+            screenshot_cmd = f"screencapture -x {path}"
+        else:  # Linux/Unix
+            # Try gnome-screenshot first
+            if shutil.which("gnome-screenshot"):
+                screenshot_cmd = f"{self._display_prefix}gnome-screenshot -f {path} -p"
+            else:
+                # Fall back to scrot if gnome-screenshot isn't available
+                screenshot_cmd = f"{self._display_prefix}scrot -p {path}"
 
         result = await self.shell(screenshot_cmd, take_screenshot=False)
         if self._scaling_enabled:
